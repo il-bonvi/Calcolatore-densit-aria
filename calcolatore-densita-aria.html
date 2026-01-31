@@ -430,6 +430,22 @@
                         <p>• La densità diminuisce di ~0.035-0.036 kg/m³ ogni 305 m di altitudine</p>
                         <p>• L'aria umida è <em>meno densa</em> dell'aria secca</p>
                     </div>
+
+                    <div class="info-box" style="margin-top:1rem">
+                        <p><strong>Formulario</strong></p>
+                        <p><strong>Pressione di vapore di saturazione (Magnus):</strong><br>
+                        p<sub>sat</sub>(T) = 6.1078 × 10<sup>(7.5 T / (T + 237.3))</sup>  hPa</p>
+
+                        <p><strong>Relazione punto di rugiada ↔ RH (Magnus):</strong><br>
+                        α = ln(RH/100) + (17.62 T)/(243.12 + T)<br>
+                        T<sub>d</sub> = 243.12 · α / (17.62 − α)</p>
+
+                        <p><strong>Densità aria secca:</strong><br>
+                        ρ = P / (R<sub>d</sub> · T)  (P in Pa, T in K)</p>
+
+                        <p><strong>Densità aria umida:</strong><br>
+                        ρ = (p<sub>d</sub> /(R<sub>d</sub>·T)) + (p<sub>v</sub> /(R<sub>v</sub>·T))</p>
+                    </div>
                 </div>
             </div>
 
@@ -503,6 +519,19 @@
                         <p>• Esempio pratico: a 4.000 m la pressione è circa <strong>645 hPa</strong> (dipende dalla temperatura)</p>
                         <p>• Lapse rate: <strong>-0.0065 K/m</strong> (valore ISA consigliato). Il lapse rate è il tasso di variazione lineare della temperatura con la quota; ad es. -0.0065 K/m significa una diminuzione di 6.5 K ogni 1000 m.</p>
                         <p style="margin-top:0.25rem; font-size:0.95rem; color:var(--text-light)"></p></em></p>
+                    </div>
+
+                    <div class="info-box" style="margin-top:1rem">
+                        <p><strong>Formulario</strong></p>
+                        <p><strong>Isoterma (barometrica):</strong><br>
+                        P(h) = P<sub>0</sub> · exp(− g M (h − h<sub>0</sub>) / (R · T))</p>
+
+                        <p><strong>Con lapse-rate (lineare):</strong><br>
+                        T(h) = T<sub>0</sub> + L · (h − h<sub>0</sub>)<br>
+                        P(h) = P<sub>0</sub> · (T(h)/T<sub>0</sub>)<sup>− g M / (R · L)</sup></p>
+
+                        <p><strong>Costanti:</strong><br>
+                        g = 9.80665 m/s<sup>2</sup>, M = 0.0289644 kg/mol, R = 8.31432 J/(mol·K)</p>
                     </div>
                 </div>
             </div>
@@ -633,7 +662,7 @@
             }
             
             // Display result
-            document.getElementById('result-value').textContent = density.toFixed(6) + ' kg/m³';
+            document.getElementById('result-value').textContent = density.toFixed(3) + ' kg/m³';
             document.getElementById('result-details').innerHTML = details;
             document.getElementById('result').classList.add('show');
             
