@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolatore Densità dell'Aria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a3a52;
+            --secondary: #2c5f7f;
+            --accent: #e8943e;
+            --accent-light: #f5b76f;
+            --bg-main: #f4f1ea;
+            --bg-card: #ffffff;
+            --text-dark: #1a1a1a;
+            --text-light: #5a5a5a;
+            --border: #d4c9b8;
+            --shadow: rgba(26, 58, 82, 0.08);
+            --shadow-heavy: rgba(26, 58, 82, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: linear-gradient(135deg, var(--bg-main) 0%, #e8e3d8 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .greek {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .calculator {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px var(--shadow), 0 2px 8px var(--shadow-heavy);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .label-description {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 0.5rem;
+            align-items: stretch;
+        }
+
+        input[type="number"],
+        select {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-main);
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(232, 148, 62, 0.1);
+        }
+
+        .unit {
+            padding: 0.875rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .radio-option {
+            flex: 1;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 0.75rem 1rem;
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(232, 148, 62, 0.3);
+        }
+
+        .humidity-inputs {
+            opacity: 1;
+            max-height: none;
+            overflow: visible;
+            transition: all 0.4s ease;
+        }
+
+        .humidity-inputs.hidden {
+            opacity: 0;
+            max-height: 0;
+            margin: 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 1.25rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Crimson Pro', serif;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(232, 148, 62, 0.3);
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(232, 148, 62, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 0.75rem;
+            padding: 0 2rem; /* collapsed vertically when hidden */
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-radius: 15px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease, max-height 0.45s ease, padding 0.3s ease;
+        }
+
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 600px; /* enough to show content */
+            padding: 2rem;
+        }
+
+        .result-value {
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 1rem 0;
+            letter-spacing: -0.02em;
+        }
+
+        .result-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-details {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.95rem;
+            opacity: 0.85;
+        }
+
+        .info-box {
+            background: rgba(232, 148, 62, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .info-box p {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .calculator {
+                padding: 1.5rem;
+            }
+
+            .result-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calcolatore Densità dell'Aria</h1>
+            <p class="subtitle">Calcola <span class="greek">ρ</span> (rho) in base a temperatura, pressione e umidità</p>
+        </header>
+
+        <div class="calculator">
+            <div class="input-group">
+                <label>Tipo di aria</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="aria-secca" name="air-type" value="dry">
+                        <label for="aria-secca">Aria Secca</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="aria-umida" name="air-type" value="humid" checked>
+                        <label for="aria-umida">Aria Umida</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="temperature">
+                    Temperatura dell'aria
+                    <span class="label-description">Temperatura esterna</span>
+                </label>
+                <div class="input-wrapper">
+                    <input type="number" id="temperature" step="0.1" value="30" required>
+                    <span class="unit">°C</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="pressure">
+                    Pressione atmosferica
+                    <span class="label-description">Pressione barometrica</span>
+                </label>
+                <div class="input-wrapper">
+                    <input type="number" id="pressure" step="0.1" value="1022" required>
+                    <span class="unit">hPa</span>
+                </div>
+            </div>
+
+            <div class="humidity-inputs hidden" id="humidity-section">
+                <div class="input-group">
+                    <label>Misura umidità tramite</label>
+                    <select id="humidity-type">
+                        <option value="relative">Umidità Relativa (RH)</option>
+                        <option value="dewpoint">Punto di Rugiada</option>
+                    </select>
+                </div>
+
+                <div class="input-group" id="rh-input">
+                    <label for="relative-humidity">
+                        Umidità Relativa
+                        <span class="label-description">Percentuale di saturazione del vapore</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="number" id="relative-humidity" step="0.1" min="0" max="100" value="50">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+
+                <div class="input-group hidden" id="dew-input">
+                    <label for="dew-point">
+                        Punto di Rugiada
+                        <span class="label-description">Temperatura di condensazione</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="number" id="dew-point" step="0.1" value="10">
+                        <span class="unit">°C</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="calculateDensity()">Calcola Densità</button>
+
+            <div class="result" id="result">
+                <div class="result-label">Densità dell'aria <span class="greek">(ρ)</span></div>
+                <div class="result-value" id="result-value">—</div>
+                <div class="result-details" id="result-details"></div>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Valori di riferimento:</strong></p>
+                <p>• Densità standard al livello del mare (15°C): <strong>1.225 kg/m³</strong></p>
+                <p>• La densità diminuisce di ~0.035-0.036 kg/m³ ogni 305 m di altitudine</p>
+                <p>• L'aria umida è <em>meno densa</em> dell'aria secca</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const Rd = 287.058; // J/(kg·K) - Specific gas constant for dry air
+        const Rv = 461.495; // J/(kg·K) - Specific gas constant for water vapor
+
+        // Event listeners
+        document.querySelectorAll('input[name="air-type"]').forEach(radio => {
+            radio.addEventListener('change', toggleHumidityInputs);
+        });
+
+        document.getElementById('humidity-type').addEventListener('change', toggleHumidityMeasure);
+
+        function toggleHumidityInputs() {
+            const isHumid = document.getElementById('aria-umida').checked;
+            const humiditySection = document.getElementById('humidity-section');
+            if (isHumid) {
+                humiditySection.classList.remove('hidden');
+            } else {
+                humiditySection.classList.add('hidden');
+            }
+        }
+
+        function toggleHumidityMeasure() {
+            const humidityType = document.getElementById('humidity-type').value;
+            const rhInput = document.getElementById('rh-input');
+            const dewInput = document.getElementById('dew-input');
+            if (humidityType === 'relative') {
+                rhInput.classList.remove('hidden');
+                dewInput.classList.add('hidden');
+            } else {
+                rhInput.classList.add('hidden');
+                dewInput.classList.remove('hidden');
+            }
+        }
+
+        // Mostra le sezioni umidità se "Aria Umida" è selezionata all'avvio
+        window.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('aria-umida').checked) {
+                document.getElementById('humidity-section').classList.remove('hidden');
+                toggleHumidityMeasure(); // Mostra la misura corretta
+            }
+        });
+
+        function celsiusToKelvin(celsius) {
+            return celsius + 273.15;
+        }
+
+        function calculateSaturationVaporPressure(tempCelsius) {
+            // Formula: p1 = 6.1078 × 10^(7.5T / (T + 237.3))
+            const T = tempCelsius;
+            return 6.1078 * Math.pow(10, (7.5 * T) / (T + 237.3));
+        }
+
+        function calculateRelativeHumidityFromDewPoint(tempCelsius, dewPointCelsius) {
+            // α = ln(RH/100) + (17.62T)/(243.12 + T)
+            // Solving for RH from dew point
+            const T = tempCelsius;
+            const Td = dewPointCelsius;
+            
+            const alpha = (17.62 * Td) / (243.12 + Td) - (17.62 * T) / (243.12 + T);
+            const RH = 100 * Math.exp(alpha);
+            
+            return RH;
+        }
+
+        function dewPointFromRH(tempCelsius, RH) {
+            // Uses Magnus-Tetens approximation (consistent constants with other funcs)
+            // alpha = ln(RH/100) + (17.62*T)/(243.12 + T)
+            // Td = 243.12 * alpha / (17.62 - alpha)
+            const T = tempCelsius;
+            const rh = RH;
+            if (isNaN(T) || isNaN(rh) || rh <= 0) return NaN;
+            const alpha = Math.log(rh / 100) + (17.62 * T) / (243.12 + T);
+            const Td = (243.12 * alpha) / (17.62 - alpha);
+            return Td;
+        }
+
+        function calculateDensity() {
+            // Get inputs
+            const tempCelsius = parseFloat(document.getElementById('temperature').value);
+            const pressureHPa = parseFloat(document.getElementById('pressure').value);
+            const isHumid = document.getElementById('aria-umida').checked;
+            
+            // Validate inputs
+            if (isNaN(tempCelsius) || isNaN(pressureHPa)) {
+                alert('Per favore inserisci valori validi per temperatura e pressione.');
+                return;
+            }
+            
+            // Convert temperature to Kelvin
+            const tempKelvin = celsiusToKelvin(tempCelsius);
+            
+            let density;
+            let details = '';
+            
+            if (!isHumid) {
+                // Dry air calculation: ρ = P / (Rd × T)
+                // Convert hPa to Pa (1 hPa = 100 Pa)
+                const pressurePa = pressureHPa * 100;
+                density = pressurePa / (Rd * tempKelvin);
+                
+                details = `<strong>Aria Secca</strong><br>
+                          Temperatura: ${tempCelsius}°C (${tempKelvin.toFixed(2)} K)<br>
+                          Pressione: ${pressureHPa} hPa (${pressurePa} Pa)`;
+            } else {
+                // Humid air calculation
+                let RH; // Relative humidity in percentage
+                const humidityType = document.getElementById('humidity-type').value;
+                
+                if (humidityType === 'relative') {
+                    RH = parseFloat(document.getElementById('relative-humidity').value);
+                    if (isNaN(RH) || RH < 0 || RH > 100) {
+                        alert('Per favore inserisci un valore valido per l\'umidità relativa (0-100%).');
+                        return;
+                    }
+                } else {
+                    const dewPoint = parseFloat(document.getElementById('dew-point').value);
+                    if (isNaN(dewPoint)) {
+                        alert('Per favore inserisci un valore valido per il punto di rugiada.');
+                        return;
+                    }
+                    RH = calculateRelativeHumidityFromDewPoint(tempCelsius, dewPoint);
+                }
+                
+                // Step 1: Calculate saturation vapor pressure
+                const p1 = calculateSaturationVaporPressure(tempCelsius);
+                
+                // Step 2: Calculate actual vapor pressure (p1 is in hPa)
+                const pv = p1 * (RH / 100);
+
+                // Step 3: Calculate dry air pressure (still in hPa)
+                const pd = pressureHPa - pv;
+
+                // Convert pressures from hPa to Pa for use with Rd and Rv
+                const pvPa = pv * 100;
+                const pdPa = pd * 100;
+
+                // Step 4: Calculate density using combined formula
+                // ρ = (pd / (Rd × T)) + (pv / (Rv × T))  with pressures in Pa
+                density = (pdPa / (Rd * tempKelvin)) + (pvPa / (Rv * tempKelvin));
+                
+                details = `<strong>Aria Umida</strong><br>
+                          Temperatura: ${tempCelsius}°C (${tempKelvin.toFixed(2)} K)<br>
+                          Pressione totale: ${pressureHPa} hPa<br>
+                          Umidità relativa: ${RH.toFixed(1)}%<br>
+                          Pressione vapore: ${pv.toFixed(2)} hPa<br>
+                          Pressione aria secca: ${pd.toFixed(2)} hPa`;
+            }
+            
+            // Display result
+            document.getElementById('result-value').textContent = density.toFixed(6) + ' kg/m³';
+            document.getElementById('result-details').innerHTML = details;
+            document.getElementById('result').classList.add('show');
+            
+            // Scroll to result
+            setTimeout(() => {
+                document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        // Allow Enter key to calculate
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    calculateDensity();
+                }
+            });
+        });
+
+        // Sync RH <-> Dew Point (bidirectional)
+        (function() {
+            const rhInput = document.getElementById('relative-humidity');
+            const dewInput = document.getElementById('dew-point');
+            const tempInput = document.getElementById('temperature');
+            let syncLock = false;
+
+            function updateDewFromRH() {
+                if (syncLock) return;
+                const T = parseFloat(tempInput.value);
+                const RH = parseFloat(rhInput.value);
+                if (isNaN(T) || isNaN(RH)) return;
+                syncLock = true;
+                const Td = dewPointFromRH(T, RH);
+                if (!isNaN(Td)) dewInput.value = Td.toFixed(1);
+                syncLock = false;
+            }
+
+            function updateRHFromDew() {
+                if (syncLock) return;
+                const T = parseFloat(tempInput.value);
+                const Td = parseFloat(dewInput.value);
+                if (isNaN(T) || isNaN(Td)) return;
+                syncLock = true;
+                const RH = calculateRelativeHumidityFromDewPoint(T, Td);
+                if (!isNaN(RH)) rhInput.value = Math.min(100, Math.max(0, RH)).toFixed(1);
+                syncLock = false;
+            }
+
+            rhInput.addEventListener('input', () => {
+                updateDewFromRH();
+            });
+
+            dewInput.addEventListener('input', () => {
+                updateRHFromDew();
+            });
+
+            // Also update when temperature changes
+            tempInput.addEventListener('input', () => {
+                // respect currently visible measurement type
+                const humidityType = document.getElementById('humidity-type').value;
+                if (humidityType === 'relative') updateDewFromRH();
+                else updateRHFromDew();
+            });
+
+            // Initialize values on load if humid section is visible
+            window.addEventListener('DOMContentLoaded', () => {
+                if (document.getElementById('aria-umida').checked) {
+                    const humidityType = document.getElementById('humidity-type').value;
+                    if (humidityType === 'relative') updateDewFromRH();
+                    else updateRHFromDew();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
