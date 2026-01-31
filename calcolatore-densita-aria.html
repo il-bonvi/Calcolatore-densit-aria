@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcolatore Densità dell'Aria</title>
+    <title>Calcolatore Nerd</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -175,12 +175,14 @@
             max-height: none;
             overflow: visible;
             transition: all 0.4s ease;
+            pointer-events: auto;
         }
 
         .humidity-inputs.hidden {
             opacity: 0;
             max-height: 0;
             margin: 0;
+            pointer-events: none;
         }
 
         button {
@@ -301,97 +303,208 @@
                 font-size: 2rem;
             }
         }
+        /* Tabs styles */
+        .tabs {
+            margin-top: 1.5rem;
+        }
+
+        .tab-headers {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 0.6rem 0.9rem;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: var(--bg-main);
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(26, 58, 82, 0.08);
+        }
+
+        .tab-panel {
+            display: block;
+        }
+
+        .tab-panel.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Calcolatore Densità dell'Aria</h1>
-            <p class="subtitle">Calcola <span class="greek">ρ</span> (rho) in base a temperatura, pressione e umidità</p>
+            <h1>Calcolatore Nerd</h1>
         </header>
 
-        <div class="calculator">
-            <div class="input-group">
-                <label>Tipo di aria</label>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" id="aria-secca" name="air-type" value="dry">
-                        <label for="aria-secca">Aria Secca</label>
+        <div class="tabs">
+            <div class="tab-headers">
+                <div class="tab active" data-tab="tab-density">Densità</div>
+                <div class="tab" data-tab="tab-pressure">Pressione</div>
+            </div>
+
+            <div class="tab-panel" id="tab-density">
+                <div class="calculator">
+                    <div class="input-group">
+                        <label>Tipo di aria</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="aria-secca" name="air-type" value="dry">
+                                <label for="aria-secca">Aria Secca</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="aria-umida" name="air-type" value="humid" checked>
+                                <label for="aria-umida">Aria Umida</label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="radio-option">
-                        <input type="radio" id="aria-umida" name="air-type" value="humid" checked>
-                        <label for="aria-umida">Aria Umida</label>
+
+                    <div class="input-group">
+                        <label for="temperature">
+                            Temperatura dell'aria
+                            <span class="label-description">Temperatura esterna</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="temperature" step="0.1" value="30" required>
+                            <span class="unit">°C</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="pressure">
+                            Pressione atmosferica
+                            <span class="label-description">Pressione barometrica</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="pressure" step="0.1" value="1022" required>
+                            <span class="unit">hPa</span>
+                        </div>
+                    </div>
+
+                    <div class="humidity-inputs hidden" id="humidity-section">
+                        <!-- Metodo di input umidità rimosso: entrambi i campi RH e Punto di Rugiada visibili e sincronizzati -->
+
+                        <div class="input-group" id="rh-input">
+                            <label for="relative-humidity">
+                                Umidità Relativa
+                                <span class="label-description">Percentuale di saturazione del vapore</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" id="relative-humidity" step="0.1" min="0" max="100" value="50">
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+
+                        <div class="input-group" id="dew-input">
+                            <label for="dew-point">
+                                Punto di Rugiada
+                                <span class="label-description">Temperatura di condensazione</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" id="dew-point" step="0.1" value="10">
+                                <span class="unit">°C</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="calculateDensity()">Calcola Densità</button>
+
+                    <div class="result" id="result">
+                        <div class="result-label">Densità dell'aria <span class="greek">(ρ)</span></div>
+                        <div class="result-value" id="result-value">—</div>
+                        <div class="result-details" id="result-details"></div>
+                    </div>
+
+                    <div class="info-box">
+                        <p><strong>Valori di riferimento:</strong></p>
+                        <p>• Densità standard al livello del mare (15°C): <strong>1.225 kg/m³</strong></p>
+                        <p>• La densità diminuisce di ~0.035-0.036 kg/m³ ogni 305 m di altitudine</p>
+                        <p>• L'aria umida è <em>meno densa</em> dell'aria secca</p>
                     </div>
                 </div>
             </div>
 
-            <div class="input-group">
-                <label for="temperature">
-                    Temperatura dell'aria
-                    <span class="label-description">Temperatura esterna</span>
-                </label>
-                <div class="input-wrapper">
-                    <input type="number" id="temperature" step="0.1" value="30" required>
-                    <span class="unit">°C</span>
-                </div>
-            </div>
+            <div class="tab-panel hidden" id="tab-pressure">
+                <div class="calculator">
+                    <div class="input-group">
+                        <label for="p-sea-pressure">
+                            Pressione al livello del mare
+                            <span class="label-description">Pressione di riferimento (P₀)</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="p-sea-pressure" step="0.1" value="1013.25">
+                            <span class="unit">hPa</span>
+                        </div>
+                    </div>
 
-            <div class="input-group">
-                <label for="pressure">
-                    Pressione atmosferica
-                    <span class="label-description">Pressione barometrica</span>
-                </label>
-                <div class="input-wrapper">
-                    <input type="number" id="pressure" step="0.1" value="1022" required>
-                    <span class="unit">hPa</span>
-                </div>
-            </div>
+                    <div class="input-group">
+                        <label for="p-temperature">
+                            Temperatura dell'aria
+                            <span class="label-description">Temperatura (usata per scala isoterma)</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="p-temperature" step="0.1" value="15">
+                            <span class="unit">°C</span>
+                        </div>
+                    </div>
 
-            <div class="humidity-inputs hidden" id="humidity-section">
-                <div class="input-group">
-                    <label>Misura umidità tramite</label>
-                    <select id="humidity-type">
-                        <option value="relative">Umidità Relativa (RH)</option>
-                        <option value="dewpoint">Punto di Rugiada</option>
-                    </select>
-                </div>
 
-                <div class="input-group" id="rh-input">
-                    <label for="relative-humidity">
-                        Umidità Relativa
-                        <span class="label-description">Percentuale di saturazione del vapore</span>
-                    </label>
-                    <div class="input-wrapper">
-                        <input type="number" id="relative-humidity" step="0.1" min="0" max="100" value="50">
-                        <span class="unit">%</span>
+                    <div class="input-group" id="lapse-group">
+                        <label for="lapse-rate">Lapse rate (L)
+                            <span class="label-description">Variazione lineare della temperatura [K/m] (default ISA -0.0065)</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="lapse-rate" step="0.0001" value="-0.0065">
+                            <span class="unit">K/m</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="p-temperature-alt">Temperatura in quota
+                            <span class="label-description">Temperatura stimata alla quota selezionata (modificabile)</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="p-temperature-alt" step="0.1" value="15">
+                            <span class="unit">°C</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="altitude">
+                            Altitudine
+                            <span class="label-description">Altitudine per cui calcolare la pressione</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="altitude" step="1" value="1000">
+                            <span class="unit">m</span>
+                        </div>
+                    </div>
+
+                    <button onclick="calculatePressure()">Calcola Pressione</button>
+
+                    <div class="result" id="result-pressure">
+                        <div class="result-label">Pressione a quota</div>
+                        <div class="result-value" id="result-pressure-value">—</div>
+                        <div class="result-details" id="result-pressure-details"></div>
+                    </div>
+                    <div class="info-box">
+                        <p><strong>Valori di riferimento:</strong></p>
+                        <p>• Pressione standard al livello del mare: <strong>1013.25 hPa</strong> (101325 Pa)</p>
+                        <p>• Tipica pressione cabina aereo: <strong>0.75–0.81 atm</strong> (≈ 760–820 hPa)</p>
+                        <p>• Esempio pratico: a 4.000 m la pressione è circa <strong>645 hPa</strong> (dipende dalla temperatura)</p>
+                        <p>• Lapse rate: <strong>-0.0065 K/m</strong> (valore ISA consigliato). Il lapse rate è il tasso di variazione lineare della temperatura con la quota; ad es. -0.0065 K/m significa una diminuzione di 6.5 K ogni 1000 m.</p>
+                        <p style="margin-top:0.25rem; font-size:0.95rem; color:var(--text-light)"></p></em></p>
                     </div>
                 </div>
-
-                <div class="input-group hidden" id="dew-input">
-                    <label for="dew-point">
-                        Punto di Rugiada
-                        <span class="label-description">Temperatura di condensazione</span>
-                    </label>
-                    <div class="input-wrapper">
-                        <input type="number" id="dew-point" step="0.1" value="10">
-                        <span class="unit">°C</span>
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="calculateDensity()">Calcola Densità</button>
-
-            <div class="result" id="result">
-                <div class="result-label">Densità dell'aria <span class="greek">(ρ)</span></div>
-                <div class="result-value" id="result-value">—</div>
-                <div class="result-details" id="result-details"></div>
-            </div>
-
-            <div class="info-box">
-                <p><strong>Valori di riferimento:</strong></p>
-                <p>• Densità standard al livello del mare (15°C): <strong>1.225 kg/m³</strong></p>
-                <p>• La densità diminuisce di ~0.035-0.036 kg/m³ ogni 305 m di altitudine</p>
-                <p>• L'aria umida è <em>meno densa</em> dell'aria secca</p>
             </div>
         </div>
     </div>
@@ -406,8 +519,6 @@
             radio.addEventListener('change', toggleHumidityInputs);
         });
 
-        document.getElementById('humidity-type').addEventListener('change', toggleHumidityMeasure);
-
         function toggleHumidityInputs() {
             const isHumid = document.getElementById('aria-umida').checked;
             const humiditySection = document.getElementById('humidity-section');
@@ -418,25 +529,12 @@
             }
         }
 
-        function toggleHumidityMeasure() {
-            const humidityType = document.getElementById('humidity-type').value;
-            const rhInput = document.getElementById('rh-input');
-            const dewInput = document.getElementById('dew-input');
-            if (humidityType === 'relative') {
-                rhInput.classList.remove('hidden');
-                dewInput.classList.add('hidden');
-            } else {
-                rhInput.classList.add('hidden');
-                dewInput.classList.remove('hidden');
-            }
-        }
 
         // Mostra le sezioni umidità se "Aria Umida" è selezionata all'avvio
         window.addEventListener('DOMContentLoaded', () => {
-            if (document.getElementById('aria-umida').checked) {
-                document.getElementById('humidity-section').classList.remove('hidden');
-                toggleHumidityMeasure(); // Mostra la misura corretta
-            }
+                if (document.getElementById('aria-umida').checked) {
+                    document.getElementById('humidity-section').classList.remove('hidden');
+                }
         });
 
         function celsiusToKelvin(celsius) {
@@ -498,26 +596,15 @@
                 density = pressurePa / (Rd * tempKelvin);
                 
                 details = `<strong>Aria Secca</strong><br>
-                          Temperatura: ${tempCelsius}°C (${tempKelvin.toFixed(2)} K)<br>
+                          Temperatura: ${tempCelsius.toFixed(0)}°C (${tempKelvin.toFixed(2)} K)<br>
                           Pressione: ${pressureHPa} hPa (${pressurePa} Pa)`;
             } else {
                 // Humid air calculation
-                let RH; // Relative humidity in percentage
-                const humidityType = document.getElementById('humidity-type').value;
-                
-                if (humidityType === 'relative') {
-                    RH = parseFloat(document.getElementById('relative-humidity').value);
-                    if (isNaN(RH) || RH < 0 || RH > 100) {
-                        alert('Per favore inserisci un valore valido per l\'umidità relativa (0-100%).');
-                        return;
-                    }
-                } else {
-                    const dewPoint = parseFloat(document.getElementById('dew-point').value);
-                    if (isNaN(dewPoint)) {
-                        alert('Per favore inserisci un valore valido per il punto di rugiada.');
-                        return;
-                    }
-                    RH = calculateRelativeHumidityFromDewPoint(tempCelsius, dewPoint);
+                // Read RH directly (dew point and RH are kept in sync)
+                const RH = parseFloat(document.getElementById('relative-humidity').value);
+                if (isNaN(RH) || RH < 0 || RH > 100) {
+                    alert('Per favore inserisci un valore valido per l\'umidità relativa (0-100%).');
+                    return;
                 }
                 
                 // Step 1: Calculate saturation vapor pressure
@@ -538,7 +625,7 @@
                 density = (pdPa / (Rd * tempKelvin)) + (pvPa / (Rv * tempKelvin));
                 
                 details = `<strong>Aria Umida</strong><br>
-                          Temperatura: ${tempCelsius}°C (${tempKelvin.toFixed(2)} K)<br>
+                          Temperatura: ${tempCelsius.toFixed(0)}°C (${tempKelvin.toFixed(2)} K)<br>
                           Pressione totale: ${pressureHPa} hPa<br>
                           Umidità relativa: ${RH.toFixed(1)}%<br>
                           Pressione vapore: ${pv.toFixed(2)} hPa<br>
@@ -564,6 +651,111 @@
                 }
             });
         });
+        
+        // Tab switching logic
+        document.querySelectorAll('.tab-headers .tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab-headers .tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const target = tab.getAttribute('data-tab');
+                document.querySelectorAll('.tab-panel').forEach(panel => {
+                    if (panel.id === target) panel.classList.remove('hidden');
+                    else panel.classList.add('hidden');
+                });
+            });
+        });
+        
+        // Pressure calculation using the barometric formula (lapse-rate mode only)
+        (function(){
+            const g = 9.80665; // m/s^2
+            const M = 0.0289644; // kg/mol (molar mass of Earth's air)
+            const R = 8.31432; // J/(mol·K)
+            const h0 = 0; // reference altitude (sea level)
+
+            window.calculatePressure = function() {
+                const p0_hPa = parseFloat(document.getElementById('p-sea-pressure').value);
+                const tempC0 = parseFloat(document.getElementById('p-temperature').value);
+                const h = parseFloat(document.getElementById('altitude').value);
+                const L = parseFloat(document.getElementById('lapse-rate').value);
+
+                if (isNaN(p0_hPa) || isNaN(tempC0) || isNaN(h) || isNaN(L)) {
+                    alert('Per favore inserisci valori validi per pressione, temperatura, altitudine e lapse rate.');
+                    return;
+                }
+
+                const p0_Pa = p0_hPa * 100; // hPa -> Pa
+                const T0 = tempC0 + 273.15; // reference temperature in K
+
+                const Th = T0 + L * (h - h0);
+                let p_Pa;
+                let details = '';
+
+                if (Math.abs(L) < 1e-12) {
+                    // isothermal fallback
+                    const exponent = - (g * M * (h - h0)) / (R * T0);
+                    p_Pa = p0_Pa * Math.exp(exponent);
+                    details = `T reference: ${ (T0-273.15).toFixed(0) }°C (${T0.toFixed(2)} K)`;
+                } else {
+                    const power = - (g * M) / (R * L);
+                    p_Pa = p0_Pa * Math.pow(Th / T0, power);
+                    details = `T₀: ${ (T0-273.15).toFixed(0) }°C (${T0.toFixed(2)} K)<br>L: ${L} K/m<br>T in quota: ${ (Th-273.15).toFixed(0) }°C (${Th.toFixed(2)} K)`;
+                }
+
+                const p_hPa = p_Pa / 100;
+                document.getElementById('result-pressure-value').textContent = p_hPa.toFixed(0) + ' hPa';
+                document.getElementById('result-pressure-details').innerHTML = `P₀: ${p0_hPa.toFixed(0)} hPa<br>Altitudine: ${h} m<br>` + details;
+                document.getElementById('result-pressure').classList.add('show');
+            };
+
+            // Allow Enter key in pressure inputs
+            ['p-sea-pressure','p-temperature','altitude','lapse-rate'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('keypress', (e) => { if (e.key === 'Enter') calculatePressure(); });
+            });
+        })();
+
+        // Sync Lapse rate <-> Temperatura in quota (bidirezionale)
+        (function(){
+            let syncTL = false;
+
+            function updateLapseFromTempAlt() {
+                if (syncTL) return;
+                const h = parseFloat(document.getElementById('altitude').value);
+                if (isNaN(h) || Math.abs(h) < 1e-9) return;
+                const T0c = parseFloat(document.getElementById('p-temperature').value);
+                const Thc = parseFloat(document.getElementById('p-temperature-alt').value);
+                if (isNaN(T0c) || isNaN(Thc)) return;
+                const L = (Thc - T0c) / h;
+                syncTL = true;
+                document.getElementById('lapse-rate').value = L.toFixed(4);
+                syncTL = false;
+            }
+
+            function updateTempAltFromLapse() {
+                if (syncTL) return;
+                const h = parseFloat(document.getElementById('altitude').value);
+                if (isNaN(h)) return;
+                const T0c = parseFloat(document.getElementById('p-temperature').value);
+                const L = parseFloat(document.getElementById('lapse-rate').value);
+                if (isNaN(T0c) || isNaN(L)) return;
+                const Th = T0c + L * h;
+                syncTL = true;
+                document.getElementById('p-temperature-alt').value = Th.toFixed(0);
+                syncTL = false;
+            }
+
+            ['p-temperature-alt','lapse-rate','p-temperature','altitude'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', () => {
+                    if (id === 'p-temperature-alt') updateLapseFromTempAlt();
+                    else updateTempAltFromLapse();
+                });
+            });
+
+            // initialize temperature-in-alt from current lapse-rate
+            updateTempAltFromLapse();
+        })();
 
         // Sync RH <-> Dew Point (bidirectional)
         (function() {
@@ -604,18 +796,13 @@
 
             // Also update when temperature changes
             tempInput.addEventListener('input', () => {
-                // respect currently visible measurement type
-                const humidityType = document.getElementById('humidity-type').value;
-                if (humidityType === 'relative') updateDewFromRH();
-                else updateRHFromDew();
+                updateDewFromRH();
             });
 
             // Initialize values on load if humid section is visible
             window.addEventListener('DOMContentLoaded', () => {
                 if (document.getElementById('aria-umida').checked) {
-                    const humidityType = document.getElementById('humidity-type').value;
-                    if (humidityType === 'relative') updateDewFromRH();
-                    else updateRHFromDew();
+                    updateDewFromRH();
                 }
             });
         })();
