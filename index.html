@@ -354,19 +354,7 @@
 
             <div class="tab-panel" id="tab-density">
                 <div class="calculator">
-                    <div class="input-group">
-                        <label>Tipo di aria</label>
-                        <div class="radio-group">
-                            <div class="radio-option">
-                                <input type="radio" id="aria-secca" name="air-type" value="dry">
-                                <label for="aria-secca">Aria Secca</label>
-                            </div>
-                            <div class="radio-option">
-                                <input type="radio" id="aria-umida" name="air-type" value="humid" checked>
-                                <label for="aria-umida">Aria Umida</label>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Selettore tipo di aria rimosso: ora si calcola sempre aria umida, RH=0 equivale ad aria secca -->
 
                     <div class="input-group">
                         <label for="temperature">
@@ -390,7 +378,7 @@
                         </div>
                     </div>
 
-                    <div class="humidity-inputs hidden" id="humidity-section">
+                    <div class="humidity-inputs" id="humidity-section">
                         <!-- Metodo di input umidità rimosso: entrambi i campi RH e Punto di Rugiada visibili e sincronizzati -->
 
                         <div class="input-group" id="rh-input">
@@ -543,28 +531,7 @@
         const Rd = 287.058; // J/(kg·K) - Specific gas constant for dry air
         const Rv = 461.495; // J/(kg·K) - Specific gas constant for water vapor
 
-        // Event listeners
-        document.querySelectorAll('input[name="air-type"]').forEach(radio => {
-            radio.addEventListener('change', toggleHumidityInputs);
-        });
-
-        function toggleHumidityInputs() {
-            const isHumid = document.getElementById('aria-umida').checked;
-            const humiditySection = document.getElementById('humidity-section');
-            if (isHumid) {
-                humiditySection.classList.remove('hidden');
-            } else {
-                humiditySection.classList.add('hidden');
-            }
-        }
-
-
-        // Mostra le sezioni umidità se "Aria Umida" è selezionata all'avvio
-        window.addEventListener('DOMContentLoaded', () => {
-                if (document.getElementById('aria-umida').checked) {
-                    document.getElementById('humidity-section').classList.remove('hidden');
-                }
-        });
+        // Selettore tipo di aria rimosso: la sezione umidità è sempre visibile
 
         function celsiusToKelvin(celsius) {
             return celsius + 273.15;
@@ -594,7 +561,8 @@
             // Td = 243.12 * alpha / (17.62 - alpha)
             const T = tempCelsius;
             const rh = RH;
-            if (isNaN(T) || isNaN(rh) || rh <= 0) return NaN;
+            if (isNaN(T) || isNaN(rh) || rh < 0) return NaN;
+            if (rh == 0) return -99.9; // Approximation for RH=0
             const alpha = Math.log(rh / 100) + (17.62 * T) / (243.12 + T);
             const Td = (243.12 * alpha) / (17.62 - alpha);
             return Td;
@@ -604,68 +572,43 @@
             // Get inputs
             const tempCelsius = parseFloat(document.getElementById('temperature').value);
             const pressureHPa = parseFloat(document.getElementById('pressure').value);
-            const isHumid = document.getElementById('aria-umida').checked;
-            
             // Validate inputs
             if (isNaN(tempCelsius) || isNaN(pressureHPa)) {
                 alert('Per favore inserisci valori validi per temperatura e pressione.');
                 return;
             }
-            
             // Convert temperature to Kelvin
             const tempKelvin = celsiusToKelvin(tempCelsius);
-            
             let density;
             let details = '';
-            
-            if (!isHumid) {
-                // Dry air calculation: ρ = P / (Rd × T)
-                // Convert hPa to Pa (1 hPa = 100 Pa)
-                const pressurePa = pressureHPa * 100;
-                density = pressurePa / (Rd * tempKelvin);
-                
-                details = `<strong>Aria Secca</strong><br>
-                          Temperatura: ${tempCelsius.toFixed(0)}°C (${tempKelvin.toFixed(2)} K)<br>
-                          Pressione: ${pressureHPa} hPa (${pressurePa} Pa)`;
-            } else {
-                // Humid air calculation
-                // Read RH directly (dew point and RH are kept in sync)
-                const RH = parseFloat(document.getElementById('relative-humidity').value);
-                if (isNaN(RH) || RH < 0 || RH > 100) {
-                    alert('Per favore inserisci un valore valido per l\'umidità relativa (0-100%).');
-                    return;
-                }
-                
-                // Step 1: Calculate saturation vapor pressure
-                const p1 = calculateSaturationVaporPressure(tempCelsius);
-                
-                // Step 2: Calculate actual vapor pressure (p1 is in hPa)
-                const pv = p1 * (RH / 100);
-
-                // Step 3: Calculate dry air pressure (still in hPa)
-                const pd = pressureHPa - pv;
-
-                // Convert pressures from hPa to Pa for use with Rd and Rv
-                const pvPa = pv * 100;
-                const pdPa = pd * 100;
-
-                // Step 4: Calculate density using combined formula
-                // ρ = (pd / (Rd × T)) + (pv / (Rv × T))  with pressures in Pa
-                density = (pdPa / (Rd * tempKelvin)) + (pvPa / (Rv * tempKelvin));
-                
-                details = `<strong>Aria Umida</strong><br>
-                          Temperatura: ${tempCelsius.toFixed(0)}°C (${tempKelvin.toFixed(2)} K)<br>
-                          Pressione totale: ${pressureHPa} hPa<br>
-                          Umidità relativa: ${RH.toFixed(1)}%<br>
-                          Pressione vapore: ${pv.toFixed(2)} hPa<br>
-                          Pressione aria secca: ${pd.toFixed(2)} hPa`;
+            // Calcolo sempre aria umida (RH=0 equivale ad aria secca)
+            const RH = parseFloat(document.getElementById('relative-humidity').value);
+            if (isNaN(RH) || RH < 0 || RH > 100) {
+                alert('Per favore inserisci un valore valido per l\'umidità relativa (0-100%).');
+                return;
             }
-            
+            // Step 1: Calculate saturation vapor pressure
+            const p1 = calculateSaturationVaporPressure(tempCelsius);
+            // Step 2: Calculate actual vapor pressure (p1 is in hPa)
+            const pv = p1 * (RH / 100);
+            // Step 3: Calculate dry air pressure (still in hPa)
+            const pd = pressureHPa - pv;
+            // Convert pressures from hPa to Pa for use with Rd and Rv
+            const pvPa = pv * 100;
+            const pdPa = pd * 100;
+            // Step 4: Calculate density using combined formula
+            // ρ = (pd / (Rd × T)) + (pv / (Rv × T))  with pressures in Pa
+            density = (pdPa / (Rd * tempKelvin)) + (pvPa / (Rv * tempKelvin));
+            details = `<strong>Aria Umida</strong><br>
+                      Temperatura: ${tempCelsius.toFixed(0)}°C (${tempKelvin.toFixed(2)} K)<br>
+                      Pressione totale: ${pressureHPa} hPa<br>
+                      Umidità relativa: ${RH.toFixed(1)}%<br>
+                      Pressione vapore: ${pv.toFixed(2)} hPa<br>
+                      Pressione aria secca: ${pd.toFixed(2)} hPa`;
             // Display result
             document.getElementById('result-value').textContent = density.toFixed(3) + ' kg/m³';
             document.getElementById('result-details').innerHTML = details;
             document.getElementById('result').classList.add('show');
-            
             // Scroll to result
             setTimeout(() => {
                 document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
